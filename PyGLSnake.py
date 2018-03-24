@@ -14,6 +14,13 @@ TICKRATE_MS = 17
 MATH_PRECISION = 5
 PIXEL_PRECISION_LIMIT = ()
 
+#Just makes things look nicer
+CORNER_ANGLES = {
+    "tl": 45,
+    "bl": 135,
+    "br": 225,
+    "tr": 315
+}
 
 #Defines the color of each type of element
 ELEMENT_TYPES = []
@@ -21,6 +28,7 @@ ELEMENT_TYPES.append([0, 0, 0]) # Type # 0; DEFAULT_COLOR
 ELEMENT_TYPES.append([66, 255, 0]) # Type # 1; SNAKE_HEAD
 ELEMENT_TYPES.append([40, 150, 0]) # Type # 2; SNAKE_TAIL
 ELEMENT_TYPES.append([0, 84, 166]) # Type # 3; OBJECTIVE
+
 
 class Grid(object):
     def __init__(self, grid_side_size_px=GRID_SIDE_SIZE_PX):
@@ -40,6 +48,7 @@ class Grid(object):
         #Figure out the coords of the top-left corner
         x_coord = self.grid_side_size_px * grid_index_tuple[0]
         y_coord = self.grid_side_size_px * grid_index_tuple[1]
+        print (x_coord, y_coord)
         new_grid_element = GridElement(self.grid_side_size_px, (x_coord, y_coord), element_type)
         self.active_grid_elements[(x_coord, y_coord)] = new_grid_element
     
@@ -59,15 +68,32 @@ class GridElement(object):
         self.color = ELEMENT_TYPES[element_type]
         self.origin_coords = origin_coords
         self.size_px = size_side_px
+        x1 = origin_coords[0]
+        y1 = origin_coords[1]
+        x2 = origin_coords[0]+self.size_px
+        y2 = origin_coords[1]-self.size_px
+        #Simple maths now, and it looks clean! Rounding just cause things get out of hand fast with floats.
+        self.absolute_center = (round((x1+x2)/2, MATH_PRECISION), round((y1+y2)/2, MATH_PRECISION))
         
+    def get_vertices(self):
+        return_vertices = {}
+        
+        return_vertices["tl"] = (self.origin_coords[0], self.origin_coords[1])
+        return_vertices["bl"] = (self.origin_coords[0], self.origin_coords[1]+self.size_px)
+        return_vertices["br"] = (self.origin_coords[0]+self.size_px, self.origin_coords[1]+self.size_px)
+        return_vertices["tr"] = (self.origin_coords[0]+self.size_px, self.origin_coords[1])
+        
+        return return_vertices
+    
+    
     def draw(self):
         vertices = self.get_vertices()
         glColor3ub(*self.color)
         glBegin(GL_QUADS)
-        glVertex2f(*vertices["tr"])
         glVertex2f(*vertices["tl"])
         glVertex2f(*vertices["bl"])
         glVertex2f(*vertices["br"])
+        glVertex2f(*vertices["tr"])
         glEnd()
 
 
@@ -86,31 +112,24 @@ class RenderManager(object):
         ## REMOVE AND REPLACE ME WITH SNAKE LOGIC ##
         ############################################
         
-        glutTimerFunc(TICKRATE_MS, self.calc_movement_all_shapes, 0)
+        
         for s in self.grid_instance.active_grid_elements:
             s.calc_movement()
             s.calc_collision_mod(self.grid_instance.active_grid_elements)
-        glutPostRedisplay()
+        
         '''
-        pass
+        glutTimerFunc(TICKRATE_MS, self.calc_movement_all_shapes, 0)
+        glutPostRedisplay()
     
     def render_all_shapes(self):
         glClear(GL_COLOR_BUFFER_BIT)
-        for s in self.grid_instance.active_grid_elements:
+        for index, s in self.grid_instance.active_grid_elements.iteritems():
             s.draw()
         glutSwapBuffers()
-    
-    def add_shape(self, shape):
-        if shape not in self.grid_instance.active_grid_elements:
-            self.grid_instance.active_grid_elements.append(shape)
-        
-    def remove_shape(self, shape):
-        if shape in self.grid_instance.active_grid_elements:
-            del(self.grid_instance.active_grid_elements[self.grid_instance.active_grid_elements.index(shape)])
 
 def init():
     glClearColor(*(ELEMENT_TYPES[0]+[255])) #All our colors are 3-ints, this one needs alpha channel too so we just tack it on
-    gluOrtho2D(-WINDOW_SIZE[0], WINDOW_SIZE[0], -WINDOW_SIZE[1], WINDOW_SIZE[1])
+    gluOrtho2D(0, WINDOW_SIZE[0], WINDOW_SIZE[1], 0)
 
 
 def main():
@@ -121,6 +140,11 @@ def main():
     glutCreateWindow("PyGLSnake")
     
     Game_Grid = Grid()
+    #Just showin off it working
+    Game_Grid.create_grid_element(3, (0,0))
+    Game_Grid.create_grid_element(3, (1,1))
+    Game_Grid.create_grid_element(3, (2,2))
+    Game_Grid.create_grid_element(3, (3,3))
     
     renderman = RenderManager(Game_Grid)
     glutDisplayFunc(renderman.render_all_shapes)
