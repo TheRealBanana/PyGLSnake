@@ -28,6 +28,7 @@ ELEMENT_TYPES.append([0, 0, 0]) # Type # 0; DEFAULT_COLOR
 ELEMENT_TYPES.append([66, 255, 0]) # Type # 1; SNAKE_HEAD
 ELEMENT_TYPES.append([40, 150, 0]) # Type # 2; SNAKE_TAIL
 ELEMENT_TYPES.append([0, 84, 166]) # Type # 3; OBJECTIVE
+ELEMENT_TYPES.append([255, 0, 0]) # Type # 4; DEAD HEAD
 
 
 class Grid(object):
@@ -50,7 +51,7 @@ class Grid(object):
         x_coord = self.grid_side_size_px * grid_index_tuple[0]
         y_coord = self.grid_side_size_px * grid_index_tuple[1]
         new_grid_element = GridElement(self.grid_side_size_px, (x_coord, y_coord), element_type)
-        self.active_grid_elements[(x_coord, y_coord)] = new_grid_element
+        self.active_grid_elements[grid_index_tuple] = new_grid_element
     
     def delete_grid_element(self, grid_index_tuple):
         if self.active_grid_elements.has_key(grid_index_tuple):
