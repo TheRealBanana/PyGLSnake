@@ -1,18 +1,18 @@
 
-from OpenGL.GL import glColor3ub, glVertex2f, glBegin, glEnd, glClearColor, GL_QUADS, glClear, GL_COLOR_BUFFER_BIT
+from OpenGL.GL import glColor3ub, glVertex2i, glBegin, glEnd, glClearColor, GL_QUADS, glClear, GL_COLOR_BUFFER_BIT
 from OpenGL.GLU import gluOrtho2D
 from OpenGL.GLUT import glutTimerFunc, glutInit, glutInitDisplayMode, glutPostRedisplay, glutInitWindowSize, glutInitWindowPosition, glutSwapBuffers, glutCreateWindow, glutDisplayFunc, glutMainLoop, GLUT_DOUBLE, GLUT_RGB, glutSetOption, GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION
 from OpenGL.WGL.EXT import swap_control
 #from time import sleep, time
-from math import floor, cos, sin, sqrt, pi#, copysign
+from math import floor
 import sys
+from snake_logic import Snake
 
 WINDOW_SIZE = (500,500)
 GRID_SIDE_SIZE_PX = 25
 VSYNC = True
-TICKRATE_MS = 17
+TICKRATE_MS = 300
 MATH_PRECISION = 5
-PIXEL_PRECISION_LIMIT = ()
 
 #Just makes things look nicer
 CORNER_ANGLES = {
@@ -33,9 +33,10 @@ ELEMENT_TYPES.append([0, 84, 166]) # Type # 3; OBJECTIVE
 class Grid(object):
     def __init__(self, grid_side_size_px=GRID_SIDE_SIZE_PX):
         super(Grid, self).__init__()
-        self.rows = floor(WINDOW_SIZE[0]/GRID_SIDE_SIZE_PX)
-        self.cols = floor(WINDOW_SIZE[1]/GRID_SIDE_SIZE_PX)
+        self.rows = int(floor(WINDOW_SIZE[0]/GRID_SIDE_SIZE_PX))
+        self.cols = int(floor(WINDOW_SIZE[1]/GRID_SIDE_SIZE_PX))
         self.grid_side_size_px = grid_side_size_px
+        print "GRID SIZE: X:%s,Y:%s - PX:%s" % (self.rows, self.cols, self.grid_side_size_px)
         self.active_grid_elements = {}
         
     def get_grid_element(self, grid_index_tuple):
@@ -48,7 +49,6 @@ class Grid(object):
         #Figure out the coords of the top-left corner
         x_coord = self.grid_side_size_px * grid_index_tuple[0]
         y_coord = self.grid_side_size_px * grid_index_tuple[1]
-        print (x_coord, y_coord)
         new_grid_element = GridElement(self.grid_side_size_px, (x_coord, y_coord), element_type)
         self.active_grid_elements[(x_coord, y_coord)] = new_grid_element
     
@@ -60,6 +60,9 @@ class Grid(object):
             #Replace-me after debugging
             raise Exception("Tried to delete non-existent grid element at index %s" % repr(grid_index_tuple))
             #return False
+    
+    def clear_grid(self):
+        self.active_grid_elements = {}
 
 class GridElement(object):
     def __init__(self, size_side_px, origin_coords, element_type):
@@ -90,40 +93,40 @@ class GridElement(object):
         vertices = self.get_vertices()
         glColor3ub(*self.color)
         glBegin(GL_QUADS)
-        glVertex2f(*vertices["tl"])
-        glVertex2f(*vertices["bl"])
-        glVertex2f(*vertices["br"])
-        glVertex2f(*vertices["tr"])
+        glVertex2i(*vertices["tl"])
+        glVertex2i(*vertices["bl"])
+        glVertex2i(*vertices["br"])
+        glVertex2i(*vertices["tr"])
         glEnd()
 
 
 
 class RenderManager(object):
-    def __init__(self, grid_instance):
+    def __init__(self, grid_instance, snake_instance):
         super(RenderManager, self).__init__()
         self.grid_instance = grid_instance
+        self.snake_instance = snake_instance
 
     
     def calc_movement_all_shapes(self, _):
+        '''
+        ###############################################
+        ## REPLACE-ME WITH KEYBOARD DETECTION STUFFS ##
+        ###############################################
+        '''
+        
+        #Snake logic, best logic
+        self.snake_instance.game_tick()
+        
         #Reset our timer
-        
-        '''
-        ############################################
-        ## REMOVE AND REPLACE ME WITH SNAKE LOGIC ##
-        ############################################
-        
-        
-        for s in self.grid_instance.active_grid_elements:
-            s.calc_movement()
-            s.calc_collision_mod(self.grid_instance.active_grid_elements)
-        
-        '''
         glutTimerFunc(TICKRATE_MS, self.calc_movement_all_shapes, 0)
+        
+        #Tell glut to rerun our display function
         glutPostRedisplay()
     
     def render_all_shapes(self):
         glClear(GL_COLOR_BUFFER_BIT)
-        for index, s in self.grid_instance.active_grid_elements.iteritems():
+        for _, s in self.grid_instance.active_grid_elements.iteritems():
             s.draw()
         glutSwapBuffers()
 
@@ -140,13 +143,10 @@ def main():
     glutCreateWindow("PyGLSnake")
     
     Game_Grid = Grid()
-    #Just showin off it working
-    Game_Grid.create_grid_element(3, (0,0))
-    Game_Grid.create_grid_element(3, (1,1))
-    Game_Grid.create_grid_element(3, (2,2))
-    Game_Grid.create_grid_element(3, (3,3))
     
-    renderman = RenderManager(Game_Grid)
+    snake = Snake(Game_Grid)
+    
+    renderman = RenderManager(Game_Grid, snake)
     glutDisplayFunc(renderman.render_all_shapes)
     
     glutTimerFunc(TICKRATE_MS, renderman.calc_movement_all_shapes, 0)
