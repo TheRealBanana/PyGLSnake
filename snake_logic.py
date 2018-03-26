@@ -3,26 +3,34 @@ class Snake(object):
         super(Snake, self).__init__()
         self.game_grid_instance = game_grid_instance
         self.tickno = 0
-        self.tickoffset = 0
         #self.current_mode = self.test_mode_init #Test mode for now
         self.current_mode = self.snake_mode
-        self.current_grid = (5, 5)
-        self.direction = "down"
+        self.current_grid = (9, 7)
+        self.direction = "None"
         self.snake_grids = [self.current_grid]
         self.game_grid_instance.create_grid_element(1, self.current_grid)
         self.objective_list = []
-        self.length = 5
+        self.length = 25
         self.alive = True
-        #self.test_pattern1()
         
     def game_tick(self):
-        #print "Tick tock motherfucker"
         self.current_mode()
+        self.tickno += 1 #not sure why im doing this.
         
     
+    def snake_dead(self):
+        #Color the snake head red to indicate we ded
+        self.game_grid_instance.create_grid_element(4, self.current_grid)
+        print "UGH WE DED"
+        self.current_mode = self.game_over
+    
     def snake_mode(self):
-        #self.moveSnake()
-        self.snake_move_test()
+        if self.direction == "None":
+            #Just starting out. Do stuffs for just starting out...
+            self.direction = "right"
+        
+        self.moveSnake()
+        #self.snake_move_test()
     
     def game_over(self):
         pass
@@ -38,8 +46,6 @@ class Snake(object):
         
         #Hit ourself! X(
         elif next_move in self.snake_grids:
-            #Color the block we ran into red
-            self.game_grid_instance.create_grid_element(next_move, 4)
             self.alive = False
             
         
@@ -62,8 +68,7 @@ class Snake(object):
             
             self.current_grid = next_move
         if self.alive == False:
-            print "UGH WE DED"
-            self.current_mode = self.game_over
+            self.snake_dead()
     
     
     def getMove(self, direction=None):
@@ -84,65 +89,16 @@ class Snake(object):
         return next_grid
         
     
+    #Getting input from GLUT's special input func
+    def keypress_callback_GLUT(self, keycode, _, __): #Last two args are the x and y coords but we dont care about them
+        if keycode == 100: self.changeDirection("left")
+        elif keycode == 101: self.changeDirection("up")
+        elif keycode == 102: self.changeDirection("right")
+        elif keycode == 103: self.changeDirection("down")
+    
     def changeDirection(self, newdir):
         if self.alive == True:
             #Dont allow direction change in the direct opposite (run backwards)
             if self.getMove(newdir) != self.snake_grids[-2]:
                 self.direction = newdir
-    
-    
-    
-    
-    #Didnt really need a test mode but it helps get a feel for how to code the real logic
-    #Might also help later when I try to make the grid scale in size
-    
-    def snake_move_test(self):
-        square_size = 5
-        right_square_path = ["right","down","left","up"]
-        left_square_path = ["up","left","down","right"]
-        
-        self.moveSnake()
-        self.tickoffset += 1
-        if self.tickoffset > square_size:
-            self.direction = right_square_path[right_square_path.index(self.direction)-1]
-            self.tickoffset = 0
-        
-    
-    
-    def test_mode_init(self):
-        print "Test mode init"
-        #Run each test pattern 5 times
-        self.test_patterns = [self.test_pattern1]
-        self.current_test_pattern = self.test_pattern1
-        self.test_iteration = 0
-        self.current_mode = self.test_mode
-    
-    def test_mode(self):
-        #print "Test mode run"
-        self.current_test_pattern()
-        self.test_iteration += 1
-        if self.tickno + self.tickoffset >= self.game_grid_instance.cols:
-            print "HIT THE END"
-            self.tickno = 0
-            print "ITERATE TICK OFFSET"
-            self.test_iteration = 0
-            self.tickoffset += 3
-            if self.tickoffset >= self.game_grid_instance.cols:
-                print "HIT THE SECOND END"
-                self.tickoffset = 0
-            #self.current_test_pattern = self.test_patterns[self.test_patterns.index(self.current_test_pattern)-1]
-        
-        
-    def test_pattern1(self):
-        
-        #Countdown Y first then countdown X (count down being count up really ugh confusing.)
-        
-        updown_offset = self.tickno + self.tickoffset
-        print (0+self.tickno,0+updown_offset)
-        #Just showin off it working
-        self.game_grid_instance.clear_grid()
-        self.game_grid_instance.create_grid_element((self.tickno%3)+1, (0+self.tickno,0+updown_offset))
-        self.game_grid_instance.create_grid_element((self.tickno%3)+1, (1+self.tickno,1+updown_offset))
-        self.game_grid_instance.create_grid_element((self.tickno%3)+1, (2+self.tickno,2+updown_offset))
-        self.game_grid_instance.create_grid_element((self.tickno%3)+1, (3+self.tickno,3+updown_offset))
-        self.tickno += 1
+

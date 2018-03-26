@@ -1,7 +1,7 @@
 
 from OpenGL.GL import glColor3ub, glVertex2i, glBegin, glEnd, glClearColor, GL_QUADS, glClear, GL_COLOR_BUFFER_BIT
 from OpenGL.GLU import gluOrtho2D
-from OpenGL.GLUT import glutTimerFunc, glutInit, glutInitDisplayMode, glutPostRedisplay, glutInitWindowSize, glutInitWindowPosition, glutSwapBuffers, glutCreateWindow, glutDisplayFunc, glutMainLoop, GLUT_DOUBLE, GLUT_RGB, glutSetOption, GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION
+from OpenGL.GLUT import glutTimerFunc, glutSpecialFunc, glutInit, glutInitDisplayMode, glutPostRedisplay, glutInitWindowSize, glutInitWindowPosition, glutSwapBuffers, glutCreateWindow, glutDisplayFunc, glutMainLoop, GLUT_DOUBLE, GLUT_RGB, glutSetOption, GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION
 from OpenGL.WGL.EXT import swap_control
 #from time import sleep, time
 from math import floor
@@ -107,15 +107,8 @@ class RenderManager(object):
         super(RenderManager, self).__init__()
         self.grid_instance = grid_instance
         self.snake_instance = snake_instance
-
     
     def calc_movement_all_shapes(self, _):
-        '''
-        ###############################################
-        ## REPLACE-ME WITH KEYBOARD DETECTION STUFFS ##
-        ###############################################
-        '''
-        
         #Snake logic, best logic
         self.snake_instance.game_tick()
         
@@ -136,6 +129,7 @@ def init():
     gluOrtho2D(0, WINDOW_SIZE[0], WINDOW_SIZE[1], 0)
 
 
+
 def main():
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB)
@@ -146,6 +140,10 @@ def main():
     Game_Grid = Grid()
     
     snake = Snake(Game_Grid)
+    
+    #I didnt really want to use GLUT much but eh, I will work this out with standard libraries  later
+    glutSpecialFunc(snake.keypress_callback_GLUT)
+    
     
     renderman = RenderManager(Game_Grid, snake)
     glutDisplayFunc(renderman.render_all_shapes)
