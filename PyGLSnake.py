@@ -11,7 +11,7 @@ from snake_logic import Snake
 WINDOW_SIZE = (500,500)
 GRID_SIDE_SIZE_PX = 25
 VSYNC = True
-TICKRATE_MS = 300
+TICKRATE_MS = 200
 MATH_PRECISION = 5
 
 #Just makes things look nicer
@@ -37,7 +37,6 @@ class Grid(object):
         self.rows = int(floor(WINDOW_SIZE[0]/GRID_SIDE_SIZE_PX))
         self.cols = int(floor(WINDOW_SIZE[1]/GRID_SIDE_SIZE_PX))
         self.grid_side_size_px = grid_side_size_px
-        print "GRID SIZE: X:%s,Y:%s - PX:%s" % (self.rows, self.cols, self.grid_side_size_px)
         self.active_grid_elements = {}
         
     def get_grid_element(self, grid_index_tuple):
