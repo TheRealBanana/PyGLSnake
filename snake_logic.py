@@ -73,7 +73,7 @@ class Snake(object):
             
         #Generate a random grid number and make sure its not currently occupied
         obj_grid = (randint(0, self.game_grid_instance.rows), randint(0, self.game_grid_instance.cols))
-        while obj_grid in self.snake_grids:
+        while obj_grid in self.snake_grids or obj_grid in self.objective_list:
             obj_grid = (randint(0, self.game_grid_instance.rows), randint(0, self.game_grid_instance.cols))
         self.objective_list.append(obj_grid)
         self.game_grid_instance.create_grid_element(3, obj_grid) #Mode 3 is our objective block
