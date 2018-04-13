@@ -71,12 +71,6 @@ class GridElement(object):
         self.color = ELEMENT_TYPES[element_type]
         self.origin_coords = origin_coords
         self.size_px = size_side_px
-        x1 = origin_coords[0]
-        y1 = origin_coords[1]
-        x2 = origin_coords[0]+self.size_px
-        y2 = origin_coords[1]-self.size_px
-        #Simple maths now, and it looks clean! Rounding just cause things get out of hand fast with floats.
-        self.absolute_center = (round((x1+x2)/2, MATH_PRECISION), round((y1+y2)/2, MATH_PRECISION))
         
     def get_vertices(self):
         return_vertices = {}
