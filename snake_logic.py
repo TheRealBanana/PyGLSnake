@@ -1,7 +1,7 @@
 from random import randint
 
 #maximum number of active objective blocks on the grid at one time
-MAX_ACTIVE_OBJS = 7
+MAX_ACTIVE_OBJS = 10
 #Delay between objectives being added to the grid, in ticks (i.e. number of snake moves between adding new objectives)
 OBJECTIVE_DELAY_TICKS = 10
 #Starting snake size
@@ -15,7 +15,7 @@ class Snake(object):
         self.tickno = 0
         #self.current_mode = self.test_mode_init #Test mode for now
         self.current_mode = self.snake_mode
-        self.current_grid = (9, 7)
+        self.current_grid = (self.game_grid_instance.rows-1, self.game_grid_instance.cols-1)
         self.direction = "None"
         self.snake_grids = [self.current_grid]
         self.game_grid_instance.create_grid_element(1, self.current_grid)
@@ -39,7 +39,7 @@ class Snake(object):
     def snake_mode(self):
         if self.direction == "None":
             #Just starting out. Do stuffs for just starting out...
-            self.direction = "right"
+            self.direction = "left"
             #Add half the max number of objectives to the grid at the start
             for _ in range(1,MAX_ACTIVE_OBJS/2):
                 self.add_objective()
@@ -72,9 +72,9 @@ class Snake(object):
             
             
         #Generate a random grid number and make sure its not currently occupied
-        obj_grid = (randint(0, self.game_grid_instance.rows), randint(0, self.game_grid_instance.cols))
+        obj_grid = (randint(0, self.game_grid_instance.rows-1), randint(0, self.game_grid_instance.cols-1))
         while obj_grid in self.snake_grids or obj_grid in self.objective_list:
-            obj_grid = (randint(0, self.game_grid_instance.rows), randint(0, self.game_grid_instance.cols))
+            obj_grid = (randint(0, self.game_grid_instance.rows-1), randint(0, self.game_grid_instance.cols-1))
         self.objective_list.append(obj_grid)
         self.game_grid_instance.create_grid_element(3, obj_grid) #Mode 3 is our objective block
         

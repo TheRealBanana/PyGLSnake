@@ -9,7 +9,7 @@ import sys
 from snake_logic import Snake
 
 WINDOW_SIZE = (500,500)
-GRID_SIDE_SIZE_PX = 25
+GRID_SIDE_SIZE_PX = 30
 VSYNC = True
 TICKRATE_MS = 200
 MATH_PRECISION = 5
@@ -46,9 +46,9 @@ class Grid(object):
             return None
     
     def create_grid_element(self, element_type, grid_index_tuple):
-        #Figure out the coords of the top-left corner
-        x_coord = self.grid_side_size_px * grid_index_tuple[0]
-        y_coord = self.grid_side_size_px * grid_index_tuple[1]
+        #Figure out the coords of the bottom-right corner
+        x_coord = self.grid_side_size_px * grid_index_tuple[0] + self.grid_side_size_px
+        y_coord = self.grid_side_size_px * grid_index_tuple[1] + self.grid_side_size_px
         new_grid_element = GridElement(self.grid_side_size_px, (x_coord, y_coord), element_type)
         self.active_grid_elements[grid_index_tuple] = new_grid_element
     
@@ -75,11 +75,11 @@ class GridElement(object):
     def get_vertices(self):
         return_vertices = {}
         
-        return_vertices["tl"] = (self.origin_coords[0], self.origin_coords[1])
-        return_vertices["bl"] = (self.origin_coords[0], self.origin_coords[1]+self.size_px)
-        return_vertices["br"] = (self.origin_coords[0]+self.size_px, self.origin_coords[1]+self.size_px)
-        return_vertices["tr"] = (self.origin_coords[0]+self.size_px, self.origin_coords[1])
-        
+        #Building from the bottom right corner.
+        return_vertices["br"] = (self.origin_coords[0], self.origin_coords[1])
+        return_vertices["tr"] = (self.origin_coords[0], self.origin_coords[1]-self.size_px)
+        return_vertices["tl"] = (self.origin_coords[0]-self.size_px, self.origin_coords[1]-self.size_px)
+        return_vertices["bl"] = (self.origin_coords[0]-self.size_px, self.origin_coords[1])
         return return_vertices
     
     
@@ -118,17 +118,18 @@ class RenderManager(object):
         glutSwapBuffers()
 
 def init():
+    glutInit(sys.argv)
+    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB)
+    glutInitWindowSize(*WINDOW_SIZE)
+    glutInitWindowPosition(50,50)
+    glutCreateWindow("PyGLSnake")
     glClearColor(*(ELEMENT_TYPES[0]+[255])) #All our colors are 3-ints, this one needs alpha channel too so we just tack it on
     gluOrtho2D(0, WINDOW_SIZE[0], WINDOW_SIZE[1], 0)
 
 
 
 def main():
-    glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB)
-    glutInitWindowSize(*WINDOW_SIZE)
-    glutInitWindowPosition(50,50)
-    glutCreateWindow("PyGLSnake")
+    init()
     
     Game_Grid = Grid()
     
@@ -142,7 +143,7 @@ def main():
     glutDisplayFunc(renderman.render_all_shapes)
     
     glutTimerFunc(TICKRATE_MS, renderman.calc_movement_all_shapes, 0)
-    init()
+    
     
     #Tell Glut to continue execution after we exit the main loop
     #Komodo's code profiler will not return any results unless you shut down just right
